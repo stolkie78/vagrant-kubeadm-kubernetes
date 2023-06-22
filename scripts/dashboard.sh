@@ -13,7 +13,7 @@ if [ -n "${DASHBOARD_VERSION}" ]; then
     sleep 5
   done
   echo 'Metrics server is ready. Installing dashboard...'
-
+  sudo -i -u vagrant kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.0/deploy/static/provider/cloud/deploy.yaml
   sudo -i -u vagrant kubectl create namespace kubernetes-dashboard
 
   echo "Creating the dashboard user..."
@@ -52,14 +52,14 @@ subjects:
   namespace: kubernetes-dashboard
 EOF
 
+
+
   echo "Deploying the dashboard..."
   sudo -i -u vagrant kubectl apply -f "https://raw.githubusercontent.com/kubernetes/dashboard/v${DASHBOARD_VERSION}/aio/deploy/recommended.yaml"
-
+  sudo -i -u vagrant kubectl expose deployment kubernetes-dashboard --type=NodePort --port=80 -n kubernetes-dashboard
   sudo -i -u vagrant kubectl -n kubernetes-dashboard get secret/admin-user -o go-template="{{.data.token | base64decode}}" >> "${config_path}/token"
   echo "The following token was also saved to: configs/token"
   cat "${config_path}/token"
   echo "
-Use it to log in at:
-http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/overview?namespace=kubernetes-dashboard
 "
 fi
